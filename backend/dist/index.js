@@ -12,20 +12,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.prismaClient = void 0;
 const express_1 = __importDefault(require("express"));
 const client_1 = require("@prisma/client");
 const config_1 = require("./config");
 const ethers6_1 = require("ethers6");
 const bip39_1 = require("bip39");
+const indexer_1 = require("./indexer");
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
-const prismaClient = new client_1.PrismaClient();
+exports.prismaClient = new client_1.PrismaClient();
 const seed = (0, bip39_1.mnemonicToSeedSync)(config_1.MNEMONIC);
 app.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("hello world");
     const username = req.body.username;
     const password = req.body.password;
-    const user = yield prismaClient.user.create({
+    const user = yield exports.prismaClient.user.create({
         data: {
             username,
             password,
@@ -46,7 +48,7 @@ app.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     const child = hdNode.derivePath(`m/44'/60'/${userId}'/0`);
     const depositAddress = child.address;
     const privateKey = child.privateKey;
-    yield prismaClient.wallet.create({
+    yield exports.prismaClient.wallet.create({
         data: {
             depositAddress,
             privateKey,
@@ -56,15 +58,15 @@ app.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     });
     console.log("wallet generated");
 }));
-app.get("/depositAddress/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const userId = Number(req.query.userId);
+app.get("/depositAddress/:userId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = Number(req.params.userId);
     if (!userId) {
         res.json({
             message: "please provide the correct userId",
         });
         return;
     }
-    const wallet = yield prismaClient.wallet.findFirst({
+    const wallet = yield exports.prismaClient.wallet.findFirst({
         where: {
             userId,
         },
@@ -80,5 +82,7 @@ app.get("/depositAddress/", (req, res) => __awaiter(void 0, void 0, void 0, func
     });
 }));
 app.listen(3000, () => {
+    console.log("hello world");
     console.log("server is up and successfully running on port 3000");
+    (0, indexer_1.getNativeEthTransfers)(21725984);
 });

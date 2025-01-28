@@ -3,11 +3,12 @@ import { PrismaClient } from "@prisma/client";
 import { MNEMONIC } from "./config";
 import { HDNodeWallet, Wallet } from "ethers6";
 import { mnemonicToSeedSync } from "bip39";
+import { getNativeEthTransfers } from "./indexer";
 
 const app = express();
 app.use(express.json());
 
-const prismaClient = new PrismaClient();
+export const prismaClient = new PrismaClient();
 const seed = mnemonicToSeedSync(MNEMONIC);
 
 app.post("/signup", async (req, res) => {
@@ -52,8 +53,8 @@ app.post("/signup", async (req, res) => {
   console.log("wallet generated");
 });
 
-app.get("/depositAddress/", async (req, res) => {
-  const userId = Number(req.query.userId);
+app.get("/depositAddress/:userId", async (req, res) => {
+  const userId = Number(req.params.userId);
   if (!userId) {
     res.json({
       message: "please provide the correct userId",
@@ -80,5 +81,7 @@ app.get("/depositAddress/", async (req, res) => {
 });
 
 app.listen(3000, () => {
+  console.log("hello world");
   console.log("server is up and successfully running on port 3000");
+  getNativeEthTransfers(21725984);
 });
